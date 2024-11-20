@@ -8,9 +8,25 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-geist-sans)"],
+        mono: ["var(--font-geist-mono)"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+      },
+      animation: {
+        gradient: "gradient 3s linear infinite",
+      },
+      keyframes: {
+        gradient: {
+          "0%": { backgroundPosition: "200% 50%" },
+          "100%": { backgroundPosition: "-200% 50%" },
+        },
+      },
+      backgroundSize: {
+        "200%": "200% auto",
       },
     },
   },
