@@ -1,0 +1,19 @@
+{
+  "name": "echo",
+  "version": "0.1.0",
+  "description": "Supercharge your live streams",
+  "scripts": {
+    "dev": "cd client && npm run dev",
+    "format": "cd client && npm run format"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlwinSunil/echo.git"
+  },
+  "author": "Alwin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlwinSunil/echo/issues"
+  },
+  "homepage": "https://github.com/AlwinSunil/echo#readme"
+}
