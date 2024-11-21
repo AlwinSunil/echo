@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 
+import Navbar from "@/components/navbar/Navbar";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-
-import Navbar from "@/app/components/navbar/Navbar";
 
 import "./globals.css";
 

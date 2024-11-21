@@ -1,10 +1,9 @@
+import { Pacifico } from "next/font/google";
 import { redirect } from "next/navigation";
 
-import { Pacifico } from "@next/font/google";
+import SignIn from "@/components/navbar/SignIn";
 
 import { auth } from "@/lib/auth";
-
-import SignIn from "@/app/components/navbar/SignIn";
 
 const pacifico = Pacifico({
   weight: "400",
@@ -17,7 +16,7 @@ export default async function Home() {
   if (session?.user) redirect("/live");
 
   return (
-    <div className="p-4 py-10">
+    <div className="p-4 py-20">
       <div>
         <h1 className="text-7xl font-black">
           <span

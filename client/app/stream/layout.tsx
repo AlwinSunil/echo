@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 
-export default async function LiveLayout({
+export default async function StreamLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -11,5 +11,5 @@ export default async function LiveLayout({
 
   if (!session?.user) redirect("/");
 
-  return <>{children}</>;
+  return <div className="flex px-4 py-4">{children}</div>;
 }

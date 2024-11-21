@@ -9,7 +9,7 @@ export default async function Navbar() {
   const session = await auth();
 
   return (
-    <nav className="flex items-center justify-between border-b border-gray-100 bg-white px-4 py-2">
+    <nav className="flex items-center justify-between border-gray-100 bg-white px-4 py-2">
       <Link
         href={session ? "/live" : "/"}
         className="text-2xl font-black tracking-tight"
