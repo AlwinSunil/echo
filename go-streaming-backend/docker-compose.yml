@@ -1,0 +1,13 @@
+services:
+  go-backend:
+    build: .
+    ports:
+      - "3000:3000" # Expose port for WebSocket connection
+    volumes:
+      - ./go-streaming-backend:/app # Mount code into container
+    networks:
+      - streaming-network
+
+networks:
+  streaming-network:
+    driver: bridge
