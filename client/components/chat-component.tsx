@@ -12,7 +12,6 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
   id: number;
@@ -66,7 +65,7 @@ export function ChatComponent({
           isChatVisible && "border-b",
         )}
       >
-        <h3 className="text-base font-semibold ml-1">Live Chat</h3>
+        <h3 className="text-sm font-semibold ml-1">Live Chat</h3>
         <Button
           variant="outline"
           size="sm"
@@ -119,7 +118,7 @@ export function ChatComponent({
               ))}
             </div>
           </CardContent>
-          <CardFooter className="p-2.5 border-t">
+          <CardFooter className="p-2.5">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -136,7 +135,7 @@ export function ChatComponent({
               <Button
                 type="submit"
                 size="sm"
-                className="rounded-none h-9 px-4 shadow-none !mt-0"
+                className="rounded-none h-9 px-3 shadow-none !mt-0"
               >
                 Send
               </Button>

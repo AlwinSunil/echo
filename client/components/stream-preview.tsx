@@ -140,7 +140,7 @@ export function StreamPreview({
   return (
     <Card className="overflow-hidden shadow-none border-none">
       <CardContent className="p-0">
-        <div className="relative grid grid-cols-2 gap-3 p-1">
+        <div className="relative grid grid-cols-2 gap-3">
           <div
             className="relative bg-black overflow-hidden"
             style={{

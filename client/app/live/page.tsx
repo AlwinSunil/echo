@@ -68,73 +68,73 @@ export default function LivePage() {
   return (
     <>
       <NetworkStatus status={liveStatus} />
-      <div className="container mx-auto p-4 space-y-2.5">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 flex justify-between items-center">
+      <div className="container mx-auto p-4 grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold">Live Streaming Dashboard</h1>
             <ViewerCount count={viewerCount} />
           </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 space-y-3">
-            <StreamPreview
-              isCameraOn={isCameraOn}
-              isScreenSharing={isScreenSharing}
-            />
-            <div className="flex gap-2 justify-between items-center">
-              <div className="flex space-x-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="lg:col-span-2 space-y-3">
+              <StreamPreview
+                isCameraOn={isCameraOn}
+                isScreenSharing={isScreenSharing}
+              />
+              <div className="flex gap-2 justify-between items-center">
+                <div className="flex space-x-2">
+                  <Button
+                    className="rounded-none shadow-none"
+                    variant={isCameraOn ? "default" : "outline"}
+                    size="icon"
+                    onClick={() => setIsCameraOn(!isCameraOn)}
+                  >
+                    <Camera className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    className="rounded-none shadow-none"
+                    variant={isScreenSharing ? "default" : "outline"}
+                    size="icon"
+                    onClick={() => setIsScreenSharing(!isScreenSharing)}
+                  >
+                    <Monitor className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    className="rounded-none shadow-none"
+                    variant={isAudioOn ? "default" : "outline"}
+                    size="icon"
+                    onClick={() => setIsAudioOn(!isAudioOn)}
+                  >
+                    {isAudioOn ? (
+                      <Mic className="h-5 w-5" />
+                    ) : (
+                      <MicOff className="h-5 w-5" />
+                    )}
+                  </Button>
+                </div>
                 <Button
-                  className="rounded-none shadow-none"
-                  variant={isCameraOn ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setIsCameraOn(!isCameraOn)}
-                >
-                  <Camera className="h-5 w-5" />
-                </Button>
-                <Button
-                  className="rounded-none shadow-none"
-                  variant={isScreenSharing ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setIsScreenSharing(!isScreenSharing)}
-                >
-                  <Monitor className="h-5 w-5" />
-                </Button>
-                <Button
-                  className="rounded-none shadow-none"
-                  variant={isAudioOn ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setIsAudioOn(!isAudioOn)}
-                >
-                  {isAudioOn ? (
-                    <Mic className="h-5 w-5" />
-                  ) : (
-                    <MicOff className="h-5 w-5" />
+                  className={clsx(
+                    "rounded-none text-sm uppercase font-semibold h-9 px-4 shadow-none",
+                    {
+                      "bg-red-500 text-white": isLive,
+                      "bg-black text-white": !isLive,
+                    },
                   )}
+                  variant={isLive ? "destructive" : "default"}
+                  onClick={handleGoLive}
+                  size="sm"
+                >
+                  {isLive ? "End Stream" : "Go Live"}
                 </Button>
               </div>
-              <Button
-                className={clsx(
-                  "rounded-none text-sm uppercase font-semibold h-9 px-4 shadow-none",
-                  {
-                    "bg-red-500 text-white": isLive,
-                    "bg-black text-white": !isLive,
-                  },
-                )}
-                variant={isLive ? "destructive" : "default"}
-                onClick={handleGoLive}
-                size="sm"
-              >
-                {isLive ? "End Stream" : "Go Live"}
-              </Button>
             </div>
           </div>
-          <div className="lg:col-span-1 h-[calc(100vh-152px)]">
-            <ChatComponent
-              onBanUser={handleBanUser}
-              isChatVisible={isChatVisible}
-              toggleChat={() => setIsChatVisible(!isChatVisible)}
-            />
-          </div>
+        </div>
+        <div className="lg:col-span-1 h-[calc(100vh-112px)]">
+          <ChatComponent
+            onBanUser={handleBanUser}
+            isChatVisible={isChatVisible}
+            toggleChat={() => setIsChatVisible(!isChatVisible)}
+          />
         </div>
       </div>
     </>
