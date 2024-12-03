@@ -6,77 +6,113 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
+type StreamClip struct {
+	Type       string  `json:"type"`
+	FileName   string  `json:"filename"`
+	StartTime  float64 `json:"start_time"`
+	EndTime    float64 `json:"end_time"`
+	ClipNumber int     `json:"clip_number"`
 }
 
-func ensureOutputDir() error {
-	outputDir := "outputs"
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		return fmt.Errorf("failed to create output directory: %v", err)
-	}
-	return nil
+type StreamSession struct {
+	ID        string       `json:"id"`
+	StartTime time.Time    `json:"start_time"`
+	Clips     []StreamClip `json:"clips"`
+	mu        sync.Mutex
 }
 
-func processVideoWithFFmpeg(inputFile string) error {
-	// Ensure the input file exists
-	if _, err := os.Stat(inputFile); os.IsNotExist(err) {
-		return fmt.Errorf("input file does not exist: %s", inputFile)
+type StreamState struct {
+	File          *os.File
+	ClipNumber    int
+	LastWriteTime time.Time
+	StartTime     float64
+}
+
+var (
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+)
+
+func createStreamSession() *StreamSession {
+	sessionID := uuid.New().String()
+	sessionDir := filepath.Join("outputs", sessionID)
+
+	if err := os.MkdirAll(sessionDir, 0755); err != nil {
+		log.Printf("Failed to create session directory: %v", err)
+		return nil
 	}
 
-	outputFile := inputFile + "_optimized.webm"
+	return &StreamSession{
+		ID:        sessionID,
+		StartTime: time.Now(),
+		Clips:     []StreamClip{},
+	}
+}
 
-	// Construct FFmpeg command with more robust error checking
-	ffmpegCmd := exec.Command(
-		"ffmpeg",
-		"-i", inputFile, // Input file
-		"-c:v", "libvpx-vp9", // VP9 video codec
-		"-crf", "30", // Constant Rate Factor for quality (lower is better quality)
-		"-b:v", "0", // No bitrate limit
-		"-b:a", "128k", // Audio bitrate
-		"-c:a", "libopus", // Opus audio codec
-		"-strict", "experimental",
-		"-f", "webm", // Force WebM container
-		"-y", // Overwrite output file
-		outputFile,
-	)
+func (s *StreamSession) addClip(clipType, fileName string, startTime, endTime float64, clipNumber int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	// Capture detailed error output
-	output, err := ffmpegCmd.CombinedOutput()
+	clip := StreamClip{
+		Type:       clipType,
+		FileName:   fileName,
+		StartTime:  startTime,
+		EndTime:    endTime,
+		ClipNumber: clipNumber,
+	}
+
+	s.Clips = append(s.Clips, clip)
+	s.saveSessionMetadata()
+}
+
+func (s *StreamSession) saveSessionMetadata() {
+	metadataPath := filepath.Join("outputs", s.ID, "session_metadata.json")
+	metadata, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
-		return fmt.Errorf("FFmpeg error: %v\nOutput: %s", err, string(output))
+		log.Printf("Error creating session metadata: %v", err)
+		return
 	}
 
-	log.Printf("Successfully processed video: %s", outputFile)
-	return nil
+	if err := os.WriteFile(metadataPath, metadata, 0644); err != nil {
+		log.Printf("Error saving session metadata: %v", err)
+	}
+}
+
+func processVideoWithFFmpeg(inputFile, outputDir string, streamType string, clipNumber int) (string, error) {
+	// Placeholder for actual FFmpeg processing logic.
+	return inputFile, nil
 }
 
 func handleStream(conn *websocket.Conn) {
 	defer conn.Close()
 
-	// Ensure output directory exists
-	if err := ensureOutputDir(); err != nil {
-		log.Println("Error setting up output directory:", err)
+	session := createStreamSession()
+	if session == nil {
+		log.Println("Failed to create stream session")
 		return
 	}
 
-	// Create unique filename with timestamp
-	tempFileName := filepath.Join("outputs", fmt.Sprintf("stream_%d.webm", time.Now().Unix()))
-	file, err := os.Create(tempFileName)
-	if err != nil {
-		log.Println("Error creating temporary file:", err)
+	if err := conn.WriteJSON(map[string]string{"sessionId": session.ID}); err != nil {
+		log.Println("Error sending session ID:", err)
 		return
 	}
-	defer file.Close()
+
+	sessionDir := filepath.Join("outputs", session.ID)
+	startTime := time.Now()
+
+	streamStates := make(map[string]*StreamState)
+	var streamMutex sync.Mutex
 
 	for {
 		messageType, message, err := conn.ReadMessage()
@@ -93,30 +129,115 @@ func handleStream(conn *websocket.Conn) {
 			}
 
 			switch streamMessage["type"] {
-			case "start":
-				log.Println("Started recording:", tempFileName)
-			case "end":
-				log.Println("Stopping recording, processing video")
+			case "streamStateChange":
+				streamType := streamMessage["streamType"].(string)
+				action := streamMessage["action"].(string)
 
-				// Close the file before processing
-				file.Close()
+				if action == "start" {
+					streamMutex.Lock()
+					if _, exists := streamStates[streamType]; !exists {
+						tempFileName := filepath.Join(sessionDir, fmt.Sprintf("%s_clip_%d_temp.webm",
+							streamType, time.Now().UnixNano()))
+						file, err := os.Create(tempFileName)
+						if err != nil {
+							log.Printf("Error creating file for %s: %v", streamType, err)
+							streamMutex.Unlock()
+							continue
+						}
 
-				// Process video with improved FFmpeg command
-				start := time.Now()
-				if err := processVideoWithFFmpeg(tempFileName); err != nil {
-					log.Printf("Video processing failed: %v", err)
-				} else {
-					elapsed := time.Since(start)
-					log.Printf("Video processing completed in %v", elapsed)
+						startTimeRelative := time.Since(startTime).Seconds()
+						streamStates[streamType] = &StreamState{
+							File:          file,
+							ClipNumber:    0,
+							LastWriteTime: time.Now(),
+							StartTime:     startTimeRelative,
+						}
+
+						log.Printf("Started recording %s: %s", streamType, tempFileName)
+					}
+					streamMutex.Unlock()
+				} else if action == "stop" {
+					streamMutex.Lock()
+					if state, exists := streamStates[streamType]; exists {
+						state.File.Close()
+						tempFileName := state.File.Name()
+
+						processedFileName, err := processVideoWithFFmpeg(tempFileName, sessionDir, streamType, state.ClipNumber)
+						if err != nil {
+							log.Printf("Video processing failed for %s: %v", streamType, err)
+						} else {
+							endTimeRelative := time.Since(startTime).Seconds()
+							session.addClip(streamType, processedFileName, state.StartTime, endTimeRelative, state.ClipNumber)
+							state.ClipNumber++
+						}
+
+						delete(streamStates, streamType)
+					}
+					streamMutex.Unlock()
 				}
+
+			default:
+				log.Println("Unknown message type:", streamMessage["type"])
 			}
 		} else if messageType == websocket.BinaryMessage {
-			_, err := file.Write(message)
+			streamMutex.Lock()
+
+			// Ensure the message has at least one byte for the stream type
+			if len(message) < 1 {
+				log.Println("Received empty binary message")
+				streamMutex.Unlock()
+				continue
+			}
+
+			// Extract the stream type from the last byte
+			streamTypeBit := message[len(message)-1]
+			var streamType string
+			if streamTypeBit == 1 {
+				streamType = "screen"
+			} else {
+				streamType = "camera"
+			}
+
+			// Remove the last byte to isolate the binary data
+			binaryData := message[:len(message)-1]
+
+			// Write the binary data to the appropriate file
+			if state, exists := streamStates[streamType]; exists {
+				if state.File != nil {
+					_, err := state.File.Write(binaryData)
+					if err != nil {
+						log.Printf("Error writing data to file for stream type %s: %v", streamType, err)
+					} else {
+						state.LastWriteTime = time.Now()
+						log.Printf("Writing data for stream type: %s", streamType)
+					}
+				}
+			} else {
+				log.Printf("No active state found for stream type: %s", streamType)
+			}
+
+			streamMutex.Unlock()
+		}
+	}
+
+	// Final cleanup: Close files and process any remaining streams
+	streamMutex.Lock()
+	for streamType, state := range streamStates {
+		if state.File != nil {
+			state.File.Close()
+			tempFileName := state.File.Name()
+
+			processedFileName, err := processVideoWithFFmpeg(tempFileName, sessionDir, streamType, state.ClipNumber)
 			if err != nil {
-				log.Println("Error writing to file:", err)
+				log.Printf("Final video processing failed for %s: %v", streamType, err)
+			} else {
+				endTimeRelative := time.Since(startTime).Seconds()
+				session.addClip(streamType, processedFileName, state.StartTime, endTimeRelative, state.ClipNumber)
 			}
 		}
 	}
+	streamMutex.Unlock()
+
 }
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {

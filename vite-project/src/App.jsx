@@ -6,6 +6,7 @@ const App = () => {
 		screen: false,
 	});
 	const [isStreaming, setIsStreaming] = useState(false);
+	const [sessionId, setSessionId] = useState(null);
 
 	const videoRefs = {
 		camera: useRef(null),
@@ -20,6 +21,18 @@ const App = () => {
 		camera: null,
 		screen: null,
 	});
+
+	// Notify backend about stream state changes
+	const notifyBackend = (type, action) => {
+		if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+			const message = {
+				type: "streamStateChange",
+				streamType: type,
+				action, // 'start' or 'stop'
+			};
+			wsRef.current.send(JSON.stringify(message));
+		}
+	};
 
 	// Request media access for camera or screen
 	const requestMediaAccess = async (type) => {
@@ -78,6 +91,58 @@ const App = () => {
 		}
 	};
 
+	// Dynamically handle stream changes
+	useEffect(() => {
+		if (isStreaming) {
+			Object.keys(mediaAccess).forEach((type) => {
+				if (mediaAccess[type] && !mediaRecordersRef.current[type]) {
+					// Start recording
+					const stream = streamsRef.current[type];
+					if (stream) {
+						const mediaRecorder = new MediaRecorder(stream, {
+							mimeType: "video/webm",
+						});
+
+						mediaRecorder.ondataavailable = (event) => {
+							if (event.data.size > 0) {
+								const streamTypeBit = type === "screen" ? 1 : 0;
+
+								// Create a new Blob by combining the original Blob with a new Blob containing the stream type byte
+								const modifiedBlob = new Blob(
+									[
+										event.data,
+										new Uint8Array([streamTypeBit]),
+									],
+									{ type: event.data.type }
+								);
+
+								// Send the modified Blob
+								wsRef.current.send(modifiedBlob);
+
+								console.log(modifiedBlob);
+								console.log(event.data);
+							}
+						};
+
+						mediaRecorder.start(100); // Record in chunks of 100ms
+						mediaRecordersRef.current[type] = mediaRecorder;
+						notifyBackend(type, "start");
+					}
+				} else if (
+					!mediaAccess[type] &&
+					mediaRecordersRef.current[type]
+				) {
+					// Stop recording
+					mediaRecordersRef.current[type]?.stop();
+					mediaRecordersRef.current[type] = null;
+
+					// Notify backend about stream stop
+					notifyBackend(type, "stop");
+				}
+			});
+		}
+	}, [mediaAccess, isStreaming]);
+
 	// Start streaming
 	const startStreaming = () => {
 		if (!mediaAccess.camera && !mediaAccess.screen) {
@@ -85,39 +150,24 @@ const App = () => {
 			return;
 		}
 
-		// Connect to WebSocket
 		wsRef.current = new WebSocket("ws://localhost:3000/ws");
 
 		wsRef.current.onopen = () => {
-			Object.keys(streamsRef.current).forEach((type) => {
-				if (streamsRef.current[type]) {
-					const stream = streamsRef.current[type];
-					const mediaRecorder = new MediaRecorder(stream, {
-						mimeType: "video/webm",
-					});
+			wsRef.current.onmessage = (event) => {
+				const data = JSON.parse(event.data);
 
-					// Send start message
-					wsRef.current.send(
-						JSON.stringify({
-							type: "start",
-							streamType: type,
-						})
-					);
+				if (data.sessionId) {
+					setSessionId(data.sessionId);
+					setIsStreaming(true);
 
-					// Handler for data availability
-					mediaRecorder.ondataavailable = (event) => {
-						if (event.data.size > 0) {
-							wsRef.current.send(event.data);
+					// Notify backend that streaming is active
+					Object.keys(mediaAccess).forEach((type) => {
+						if (mediaAccess[type]) {
+							notifyBackend(type, "start");
 						}
-					};
-
-					// Start recording every 100ms for low latency
-					mediaRecorder.start(100);
-					mediaRecordersRef.current[type] = mediaRecorder;
+					});
 				}
-			});
-
-			setIsStreaming(true);
+			};
 		};
 
 		wsRef.current.onerror = (error) => {
@@ -135,15 +185,12 @@ const App = () => {
 		if (wsRef.current) {
 			Object.keys(streamsRef.current).forEach((type) => {
 				if (streamsRef.current[type]) {
-					// Stop tracks
 					streamsRef.current[type]
 						?.getTracks()
 						.forEach((track) => track.stop());
 
-					// Stop media recorder
 					mediaRecordersRef.current[type]?.stop();
 
-					// Send end message
 					wsRef.current.send(
 						JSON.stringify({
 							type: "end",
@@ -151,22 +198,20 @@ const App = () => {
 						})
 					);
 
-					// Clear video source
 					if (videoRefs[type].current) {
 						videoRefs[type].current.srcObject = null;
 					}
 				}
 			});
 
-			// Close WebSocket
 			wsRef.current.close();
 		}
 
-		// Reset state
 		setIsStreaming(false);
 		setMediaAccess({ camera: false, screen: false });
 		streamsRef.current = { camera: null, screen: null };
 		mediaRecordersRef.current = { camera: null, screen: null };
+		setSessionId(null);
 	};
 
 	return (
@@ -179,6 +224,20 @@ const App = () => {
 			}}
 		>
 			<h1 style={{ textAlign: "center" }}>Multi-Stream Video Capture</h1>
+
+			{sessionId && (
+				<div
+					style={{
+						textAlign: "center",
+						backgroundColor: "#f0f0f0",
+						padding: "10px",
+						marginBottom: "20px",
+						borderRadius: "5px",
+					}}
+				>
+					<strong>Session ID:</strong> {sessionId}
+				</div>
+			)}
 
 			<div
 				style={{
@@ -262,6 +321,7 @@ const App = () => {
 							border: "none",
 							cursor: "pointer",
 							fontSize: "16px",
+							borderRadius: "5px",
 						}}
 					>
 						Stop Streaming
