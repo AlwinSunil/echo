@@ -15,6 +15,12 @@ interface UserStats {
   following: number;
 }
 
+interface UserCredits {
+  marketplaceCredits: number;
+  marketplaceCreditsUsed: number;
+  customPromptsUsed: number;
+}
+
 // Mock user data
 const userStats: UserStats = {
   totalImages: 127,
@@ -26,12 +32,19 @@ const userStats: UserStats = {
   following: 156,
 };
 
+const userCredits: UserCredits = {
+  marketplaceCredits: 8,
+  marketplaceCreditsUsed: 3,
+  customPromptsUsed: 24,
+};
+
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("images");
 
   const tabs = [
     { id: "images", label: "Images", icon: "🖼️" },
     { id: "prompts", label: "Prompts", icon: "✨" },
+    { id: "subscription", label: "Subscription", icon: "👑" },
     { id: "earnings", label: "Earnings", icon: "💰" },
   ];
 
@@ -276,6 +289,101 @@ export default function Profile() {
                 </div>
               </motion.div>
             ))}
+          </motion.div>
+        )}
+
+        {activeTab === "subscription" && (
+          <motion.div
+            key="subscription"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-4"
+          >
+            {/* Credits Overview */}
+            <div className="p-4 bg-gray-900 rounded-xl">
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <Package size={20} className="text-blue-400" />
+                Usage Overview
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-medium">Marketplace Credits</p>
+                    <p className="text-gray-400 text-sm">Used for paid prompts</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-semibold">
+                      {userCredits.marketplaceCredits - userCredits.marketplaceCreditsUsed} / {userCredits.marketplaceCredits}
+                    </p>
+                    <p className="text-gray-400 text-xs">remaining</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-medium">Custom Prompts</p>
+                    <p className="text-gray-400 text-sm">Your own prompts (unlimited)</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-semibold">{userCredits.customPromptsUsed}</p>
+                    <p className="text-gray-400 text-xs">used</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Subscription Benefits */}
+            <div className="p-4 bg-gray-900 rounded-xl">
+              <h3 className="text-white font-semibold mb-4">Subscription Benefits</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">✓</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Unlimited Custom Prompts</p>
+                    <p className="text-gray-400 text-sm">Create images with your own prompts for free</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">5</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">5 Free Marketplace Credits</p>
+                    <p className="text-gray-400 text-sm">Use paid prompts from other creators</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">₹</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Earn from Your Prompts</p>
+                    <p className="text-gray-400 text-sm">Get ₹6 for each use of your marketplace prompts</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Buy More Credits */}
+            <div className="p-4 bg-gray-900 rounded-xl">
+              <h3 className="text-white font-semibold mb-4">Need More Credits?</h3>
+              <p className="text-gray-400 text-sm mb-4">
+                Purchase additional marketplace credits to use more paid prompts
+              </p>
+              
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                className="w-full py-3 bg-white text-black rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Buy 5 Credits for ₹50
+              </motion.button>
+            </div>
           </motion.div>
         )}
 

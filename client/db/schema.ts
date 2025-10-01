@@ -187,3 +187,48 @@ export const userStats = pgTable("userStats", {
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow(),
   updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow(),
 });
+
+// User subscription and credits system
+export const userSubscriptions = pgTable("userSubscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  marketplaceCredits: integer("marketplaceCredits").default(5), // Free marketplace prompts
+  marketplaceCreditsUsed: integer("marketplaceCreditsUsed").default(0),
+  customPromptsUsed: integer("customPromptsUsed").default(0), // Unlimited free custom prompts
+  lastResetDate: timestamp("lastResetDate", { mode: "date" }).defaultNow(),
+  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow(),
+  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow(),
+});
+
+// Marketplace credit purchases
+export const creditPurchases = pgTable("creditPurchases", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  creditsPurchased: integer("creditsPurchased").notNull(), // 5 credits for ₹50
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // ₹50
+  razorpayOrderId: text("razorpayOrderId"),
+  razorpayPaymentId: text("razorpayPaymentId"),
+  status: text("status").notNull().default("pending"), // pending, completed, failed
+  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow(),
+});
+
+// Prompt usage tracking for earnings
+export const promptUsage = pgTable("promptUsage", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  promptId: uuid("promptId")
+    .references(() => prompts.id, { onDelete: "cascade" }),
+  imageId: uuid("imageId")
+    .notNull()
+    .references(() => images.id, { onDelete: "cascade" }),
+  isMarketplacePrompt: boolean("isMarketplacePrompt").notNull(),
+  creatorEarnings: decimal("creatorEarnings", { precision: 10, scale: 2 }).notNull(), // ₹6
+  platformEarnings: decimal("platformEarnings", { precision: 10, scale: 2 }).notNull(), // ₹4
+  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow(),
+});
