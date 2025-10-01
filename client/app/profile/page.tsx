@@ -54,7 +54,7 @@ export default function Profile() {
   // Mock data for user's content
   const userImages = Array.from({ length: 12 }, (_, i) => ({
     id: i.toString(),
-    url: `https://via.placeholder.com/300x400?text=Image+${i + 1}`,
+    url: `https://placehold.co/300x400?text=Image+${i + 1}`,
     likes: Math.floor(Math.random() * 1000) + 50,
     prompt: "Sample generated image prompt",
   }));
@@ -120,7 +120,7 @@ export default function Profile() {
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full bg-gray-700 overflow-hidden">
               <Image
-                src="https://via.placeholder.com/80"
+                src="https://placehold.co/80x80"
                 alt="Profile"
                 width={80}
                 height={80}

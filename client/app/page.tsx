@@ -27,8 +27,8 @@ const mockPosts: FeedPost[] = [
     id: "1",
     userId: "user1",
     userName: "Creative Artist",
-    userImage: "https://via.placeholder.com/40",
-    imageUrl: "https://via.placeholder.com/400x600?text=Generated+Image",
+    userImage: "https://placehold.co/40x40",
+    imageUrl: "https://placehold.co/400x600?text=Generated+Image",
     prompt: "A stunning portrait of a woman with ethereal lighting, digital art style",
     likes: 1247,
     comments: 89,
@@ -40,8 +40,8 @@ const mockPosts: FeedPost[] = [
     id: "2",
     userId: "user2",
     userName: "AI Dreamer",
-    userImage: "https://via.placeholder.com/40",
-    imageUrl: "https://via.placeholder.com/400x600?text=Generated+Image",
+    userImage: "https://placehold.co/40x40",
+    imageUrl: "https://placehold.co/400x600?text=Generated+Image",
     prompt: "Futuristic cityscape with neon lights and flying cars",
     likes: 892,
     comments: 56,
@@ -209,7 +209,7 @@ function FeedPage() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
                   <Image
-                    src="https://via.placeholder.com/40"
+                    src={post.userImage}
                     alt={post.userName}
                     width={40}
                     height={40}
@@ -229,7 +229,7 @@ function FeedPage() {
             {/* Post Image */}
             <div className="relative">
               <Image
-                src="https://via.placeholder.com/400x600?text=Generated+Image"
+                src={post.imageUrl}
                 alt="Generated image"
                 width={400}
                 height={600}

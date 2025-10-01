@@ -80,7 +80,7 @@ export default function Settings() {
           <div className="flex items-center gap-4 p-4 bg-gray-900 rounded-xl">
             <div className="w-16 h-16 rounded-full bg-gray-700 overflow-hidden">
               <Image
-                src={session?.user?.image || "https://via.placeholder.com/80"}
+                src={session?.user?.image || "https://placehold.co/80x80"}
                 alt="Profile"
                 width={80}
                 height={80}
