@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Send, Wand2, Download, Share2, RotateCcw, Sparkles, Search, Filter, ShoppingBag, Check, Crown, X } from "lucide-react";
-import Image from "next/image";
+// Replaced Next.js Image with native img
 import { useState, useEffect } from "react";
 import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
 
@@ -479,7 +479,7 @@ export default function Create() {
             className="mb-6"
           >
             <div className="relative bg-gray-900 rounded-xl overflow-hidden">
-              <Image
+              <img
                 src={currentImage.url}
                 alt="Generated image"
                 width={400}
@@ -545,7 +545,7 @@ export default function Create() {
                     currentImage?.id === image.id ? "ring-2 ring-white" : ""
                   }`}
                 >
-                  <Image
+                  <img
                     src={image.url}
                     alt="Generated image"
                     width={150}

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Search, Filter, ShoppingBag, Star, Eye, Crown, Zap } from "lucide-react";
-import Image from "next/image";
+// Replaced Next.js Image with native img
 import { useState } from "react";
 import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
 
@@ -192,7 +192,7 @@ export default function Marketplace() {
             >
               {/* Prompt Image */}
               <div className="relative aspect-[3/4]">
-                <Image
+                <img
                   src={prompt.exampleImageUrl}
                   alt={prompt.title}
                   width={300}
@@ -220,7 +220,7 @@ export default function Marketplace() {
               <div className="p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden">
-                    <Image
+                    <img
                       src={prompt.sellerImage}
                       alt={prompt.sellerName}
                       width={24}

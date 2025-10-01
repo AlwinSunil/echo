@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share, MoreHorizontal } from "lucide-react";
-import Image from "next/image";
+// Replaced Next.js Image with native img
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -208,7 +208,7 @@ function FeedPage() {
             <div className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
-                  <Image
+                  <img
                     src={post.userImage}
                     alt={post.userName}
                     width={40}
@@ -228,7 +228,7 @@ function FeedPage() {
 
             {/* Post Image */}
             <div className="relative">
-              <Image
+              <img
                 src={post.imageUrl}
                 alt="Generated image"
                 width={400}
