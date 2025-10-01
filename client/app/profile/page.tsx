@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Settings, Wallet, Package, TrendingUp, Users, Heart, Share2 } from "lucide-react";
-import Image from "next/image";
+// Replaced Next.js Image with native img
 import Link from "next/link";
 import { useState } from "react";
 import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
@@ -119,7 +119,7 @@ export default function Profile() {
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full bg-gray-700 overflow-hidden">
-              <Image
+              <img
                 src="https://placehold.co/80x80"
                 alt="Profile"
                 width={80}
@@ -224,7 +224,7 @@ export default function Profile() {
                 transition={{ delay: index * 0.05 }}
                 className="relative aspect-square rounded-lg overflow-hidden"
               >
-                <Image
+                <img
                   src={image.url}
                   alt="User image"
                   width={150}

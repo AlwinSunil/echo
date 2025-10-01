@@ -5,7 +5,7 @@ import { LogOut, Trash2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
-import Image from "next/image";
+// Replaced Next.js Image with native img
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,7 +79,7 @@ export default function Settings() {
         >
           <div className="flex items-center gap-4 p-4 bg-gray-900 rounded-xl">
             <div className="w-16 h-16 rounded-full bg-gray-700 overflow-hidden">
-              <Image
+              <img
                 src={session?.user?.image || "https://placehold.co/80x80"}
                 alt="Profile"
                 width={80}
