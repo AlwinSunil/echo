@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, Filter, ShoppingBag, Star, Eye } from "lucide-react";
+import { Search, Filter, ShoppingBag, Star, Eye, Crown, Zap } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
@@ -70,6 +70,12 @@ export default function Marketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPrompt, setSelectedPrompt] = useState<MarketplacePrompt | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [userCredits, setUserCredits] = useState({
+    marketplaceCredits: 8,
+    marketplaceCreditsUsed: 3,
+    customPromptsUsed: 24,
+  });
+  const [showCreditModal, setShowCreditModal] = useState(false);
 
   const filteredPrompts = mockPrompts.filter(prompt => {
     const matchesCategory = selectedCategory === "All" || prompt.category === selectedCategory;
@@ -132,6 +138,47 @@ export default function Marketplace() {
         </div>
       </motion.header>
 
+      {/* Credits Display */}
+      <div className="px-4 py-3 bg-gray-900 border-b border-gray-800">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Crown size={16} className="text-yellow-400" />
+            <span className="text-white text-sm font-medium">Your Credits</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Zap size={14} className="text-blue-400" />
+              <span className="text-white font-semibold">
+                {userCredits.marketplaceCredits - userCredits.marketplaceCreditsUsed}
+              </span>
+              <span className="text-gray-400 text-xs">
+                / {userCredits.marketplaceCredits} remaining
+              </span>
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowCreditModal(true)}
+              className="px-3 py-1 bg-white text-black text-xs font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Buy Credits
+            </motion.button>
+          </div>
+        </div>
+        <div className="mt-2">
+          <div className="w-full bg-gray-800 rounded-full h-2">
+            <div 
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ 
+                width: `${((userCredits.marketplaceCredits - userCredits.marketplaceCreditsUsed) / userCredits.marketplaceCredits) * 100}%` 
+              }}
+            />
+          </div>
+          <p className="text-gray-400 text-xs mt-1">
+            Each marketplace prompt costs 1 credit
+          </p>
+        </div>
+      </div>
+
       {/* Prompts Grid */}
       <div className="px-4 py-4">
         <div className="grid grid-cols-2 gap-4">
@@ -160,10 +207,11 @@ export default function Marketplace() {
                   </span>
                 </div>
 
-                {/* Price Badge */}
+                {/* Credit Cost Badge */}
                 <div className="absolute top-2 right-2">
-                  <span className="px-2 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">
-                    ₹{prompt.price}
+                  <span className="px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                    <Zap size={10} />
+                    1 Credit
                   </span>
                 </div>
               </div>
@@ -203,14 +251,14 @@ export default function Marketplace() {
                   </div>
                 </div>
 
-                {/* Purchase Button */}
+                {/* Use Credit Button */}
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handlePurchase(prompt)}
                   className="w-full flex items-center justify-center gap-2 py-2 bg-white text-black rounded-lg font-semibold text-sm hover:bg-gray-100 transition-colors"
                 >
-                  <ShoppingBag size={16} />
-                  Buy Now
+                  <Zap size={16} className="text-blue-600" />
+                  Use 1 Credit
                 </motion.button>
               </div>
             </motion.div>
@@ -246,6 +294,23 @@ export default function Marketplace() {
               }}
             />
           )}
-    </div>
-  );
-}
+
+          {/* Credit Purchase Modal */}
+          <EnhancedPaymentModal
+            isOpen={showCreditModal}
+            onClose={() => setShowCreditModal(false)}
+            credits={{
+              count: 5,
+              price: 50,
+            }}
+            onSuccess={(data) => {
+              // Update user credits
+              setUserCredits(prev => ({
+                ...prev,
+                marketplaceCredits: prev.marketplaceCredits + data.credits,
+              }));
+            }}
+          />
+        </div>
+      );
+    }
