@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Settings, Wallet, Package, TrendingUp, Users, Heart, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
 
 interface UserStats {
   totalImages: number;
@@ -40,6 +41,7 @@ const userCredits: UserCredits = {
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("images");
+  const [showCreditModal, setShowCreditModal] = useState(false);
 
   const tabs = [
     { id: "images", label: "Images", icon: "🖼️" },
@@ -379,6 +381,7 @@ export default function Profile() {
               
               <motion.button
                 whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCreditModal(true)}
                 className="w-full py-3 bg-white text-black rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 Buy 5 Credits for ₹50
@@ -422,6 +425,20 @@ export default function Profile() {
           </motion.div>
         )}
       </div>
+
+      {/* Enhanced Credit Purchase Modal */}
+      <EnhancedPaymentModal
+        isOpen={showCreditModal}
+        onClose={() => setShowCreditModal(false)}
+        credits={{
+          count: 5,
+          price: 50,
+        }}
+        onSuccess={() => {
+          // Refresh user credits (in real app, you'd refetch from API)
+          console.log("Credits purchased successfully");
+        }}
+      />
     </div>
   );
 }

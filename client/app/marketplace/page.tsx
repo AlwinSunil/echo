@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Search, Filter, ShoppingBag, Star, Eye } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import PaymentModal from "@/components/PaymentModal";
+import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
 
 interface MarketplacePrompt {
   id: string;
@@ -233,19 +233,19 @@ export default function Marketplace() {
         <ShoppingBag size={24} />
       </motion.button>
 
-      {/* Payment Modal */}
-      {selectedPrompt && (
-        <PaymentModal
-          isOpen={isPaymentModalOpen}
-          onClose={handleClosePaymentModal}
-          prompt={{
-            id: selectedPrompt.id,
-            title: selectedPrompt.title,
-            price: selectedPrompt.price,
-            sellerName: selectedPrompt.sellerName,
-          }}
-        />
-      )}
+          {/* Enhanced Payment Modal */}
+          {selectedPrompt && (
+            <EnhancedPaymentModal
+              isOpen={isPaymentModalOpen}
+              onClose={handleClosePaymentModal}
+              prompt={{
+                id: selectedPrompt.id,
+                title: selectedPrompt.title,
+                price: selectedPrompt.price,
+                sellerName: selectedPrompt.sellerName,
+              }}
+            />
+          )}
     </div>
   );
 }

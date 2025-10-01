@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Send, Wand2, Download, Share2, RotateCcw, Sparkles, Search, Filter, ShoppingBag, Check, Crown, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import CreditPurchaseModal from "@/components/CreditPurchaseModal";
+import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
 
 interface GeneratedImage {
   id: string;
@@ -576,11 +576,17 @@ export default function Create() {
         )}
       </div>
 
-      {/* Credit Purchase Modal */}
-      <CreditPurchaseModal
+      {/* Enhanced Credit Purchase Modal */}
+      <EnhancedPaymentModal
         isOpen={showCreditModal}
         onClose={() => setShowCreditModal(false)}
-        onSuccess={handleCreditsPurchased}
+        credits={{
+          count: 5,
+          price: 50,
+        }}
+        onSuccess={(data) => {
+          handleCreditsPurchased(data.credits);
+        }}
       />
     </div>
   );
