@@ -121,7 +121,7 @@ client/
 ├── components/            # Reusable components
 │   ├── layout/           # Layout components
 │   └── PaymentModal.tsx  # Payment modal
-├── db/                   # Database schema
+├── db/                   # Drizzle database schema
 ├── lib/                  # Utility libraries
 │   ├── auth.ts          # NextAuth configuration
 │   ├── gemini.ts        # Gemini AI integration

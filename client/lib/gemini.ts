@@ -94,8 +94,8 @@ export class GeminiImageGenerator {
       
       // Parse the variations
       return text.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
+        .map((line: string) => line.trim())
+        .filter((line: string) => line.length > 0)
         .slice(0, 5);
         
     } catch (error) {

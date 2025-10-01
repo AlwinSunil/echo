@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { razorpayService } from "@/lib/razorpay";
 import { db, prompts, promptPurchases } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,8 +42,10 @@ export async function POST(request: NextRequest) {
       .select()
       .from(promptPurchases)
       .where(
-        eq(promptPurchases.buyerId, session.user.id) &&
-        eq(promptPurchases.promptId, promptId)
+        and(
+          eq(promptPurchases.buyerId, session.user?.id!),
+          eq(promptPurchases.promptId, promptId)
+        )
       )
       .limit(1);
 
@@ -71,12 +73,12 @@ export async function POST(request: NextRequest) {
     const [purchase] = await db
       .insert(promptPurchases)
       .values({
-        buyerId: session.user.id,
+        buyerId: session.user?.id!,
         sellerId: prompt.userId,
         promptId: prompt.id,
-        amount: prompt.price,
-        platformFee: platformFee / 100,
-        sellerEarnings: sellerEarnings / 100,
+        amount: prompt.price?.toString() || "0",
+        platformFee: (platformFee / 100).toString(),
+        sellerEarnings: (sellerEarnings / 100).toString(),
         razorpayOrderId: order.id,
         status: "pending",
       })

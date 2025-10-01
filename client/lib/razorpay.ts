@@ -1,16 +1,18 @@
 import Razorpay from "razorpay";
 
-// Initialize Razorpay
-export const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// Initialize Razorpay (only in runtime, not during build)
+export const razorpay = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
+  ? new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    })
+  : null;
 
 export interface PaymentOrder {
   id: string;
-  amount: number;
+  amount: string | number;
   currency: string;
-  receipt: string;
+  receipt: string | undefined;
 }
 
 export interface PaymentOptions {
@@ -23,6 +25,10 @@ export interface PaymentOptions {
 export class RazorpayPaymentService {
   async createOrder(options: PaymentOptions): Promise<PaymentOrder> {
     try {
+      if (!razorpay) {
+        throw new Error("Razorpay not initialized");
+      }
+
       const orderOptions = {
         amount: options.amount,
         currency: options.currency || "INR",
@@ -48,6 +54,10 @@ export class RazorpayPaymentService {
 
   async verifyPayment(paymentId: string, orderId: string): Promise<boolean> {
     try {
+      if (!razorpay) {
+        throw new Error("Razorpay not initialized");
+      }
+
       const payment = await razorpay.payments.fetch(paymentId);
       
       // Verify payment details
@@ -65,6 +75,10 @@ export class RazorpayPaymentService {
 
   async getPaymentDetails(paymentId: string) {
     try {
+      if (!razorpay) {
+        throw new Error("Razorpay not initialized");
+      }
+
       const payment = await razorpay.payments.fetch(paymentId);
       return payment;
     } catch (error) {

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Purchase record not found" }, { status: 404 });
     }
 
-    if (purchase.buyerId !== session.user.id) {
+    if (purchase.buyerId !== session.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -69,14 +69,22 @@ export async function POST(request: NextRequest) {
       })
       .where(eq(promptPurchases.id, purchaseId));
 
-    // Update prompt sales count
-    await db
-      .update(prompts)
-      .set({
-        totalSales: purchase.totalSales + 1,
-        totalEarnings: Number(purchase.totalEarnings) + Number(purchase.sellerEarnings),
-      })
-      .where(eq(prompts.id, purchase.promptId));
+    // Get current prompt data and update sales count
+    const [currentPrompt] = await db
+      .select()
+      .from(prompts)
+      .where(eq(prompts.id, purchase.promptId))
+      .limit(1);
+
+    if (currentPrompt) {
+      await db
+        .update(prompts)
+        .set({
+          totalSales: (currentPrompt.totalSales || 0) + 1,
+          totalEarnings: (Number(currentPrompt.totalEarnings || 0) + Number(purchase.sellerEarnings)).toString(),
+        })
+        .where(eq(prompts.id, purchase.promptId));
+    }
 
     // Update seller earnings
     const [sellerEarnings] = await db
@@ -89,9 +97,9 @@ export async function POST(request: NextRequest) {
       await db
         .update(userEarnings)
         .set({
-          totalEarnings: Number(sellerEarnings.totalEarnings) + Number(purchase.sellerEarnings),
-          totalSales: sellerEarnings.totalSales + 1,
-          pendingAmount: Number(sellerEarnings.pendingAmount) + Number(purchase.sellerEarnings),
+          totalEarnings: (Number(sellerEarnings.totalEarnings || 0) + Number(purchase.sellerEarnings)).toString(),
+          totalSales: (sellerEarnings.totalSales || 0) + 1,
+          pendingAmount: (Number(sellerEarnings.pendingAmount || 0) + Number(purchase.sellerEarnings)).toString(),
         })
         .where(eq(userEarnings.userId, purchase.sellerId));
     } else {

@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         const [savedImage] = await db
           .insert(images)
           .values({
-            userId: session.user.id,
+            userId: session.user?.id!,
             imageUrl: imageData.imageData,
             isPublic: false, // Private by default
             likes: 0,
