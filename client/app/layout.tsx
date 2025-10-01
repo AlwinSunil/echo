@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 
 import MobileLayout from "@/components/layout/MobileLayout";
-import { GeistMono } from "geist/font/mono";
-import { GeistSans } from "geist/font/sans";
+import { Inter } from "next/font/google";
 
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "Echo - AI Image Generation",
@@ -20,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased">
         <SessionProvider>
           <MobileLayout>{children}</MobileLayout>
