@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Settings, Wallet, Package, TrendingUp, Users, Heart, Share2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import EnhancedPaymentModal from "@/components/EnhancedPaymentModal";
 
@@ -53,7 +54,7 @@ export default function Profile() {
   // Mock data for user's content
   const userImages = Array.from({ length: 12 }, (_, i) => ({
     id: i.toString(),
-    url: "/api/placeholder/300/400",
+    url: `https://via.placeholder.com/300x400?text=Image+${i + 1}`,
     likes: Math.floor(Math.random() * 1000) + 50,
     prompt: "Sample generated image prompt",
   }));
@@ -98,12 +99,14 @@ export default function Profile() {
       >
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-xl font-bold text-white">Profile</h1>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            className="text-white"
-          >
-            <Settings size={24} />
-          </motion.button>
+          <Link href="/settings">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              className="text-white"
+            >
+              <Settings size={24} />
+            </motion.button>
+          </Link>
         </div>
       </motion.header>
 
@@ -117,7 +120,7 @@ export default function Profile() {
           <div className="flex items-center gap-4 mb-4">
             <div className="w-20 h-20 rounded-full bg-gray-700 overflow-hidden">
               <Image
-                src="/api/placeholder/80/80"
+                src="https://via.placeholder.com/80"
                 alt="Profile"
                 width={80}
                 height={80}
@@ -153,13 +156,7 @@ export default function Profile() {
           <div className="flex gap-2">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className="flex-1 py-2 bg-gray-800 text-white rounded-lg font-semibold text-sm"
-            >
-              Edit Profile
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 py-2 bg-white text-black rounded-lg font-semibold text-sm"
+              className="w-full py-2 bg-white text-black rounded-lg font-semibold text-sm"
             >
               Share Profile
             </motion.button>
